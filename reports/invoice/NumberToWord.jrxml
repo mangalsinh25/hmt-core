@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.20.6.final using JasperReports Library version 6.20.6-5c96b6aa8a39ac1dc6b6bea4b81168e16dd39231  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="NumberToWord" pageWidth="595" pageHeight="842" columnWidth="565" leftMargin="20" rightMargin="10" topMargin="0" bottomMargin="0" uuid="3575fedf-e758-465e-82f4-7541303d5e6b">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Bakery B Idempiere Database"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="RECORD_ID" class="java.lang.Integer"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT fnNumberToWords(CAST(SUM(linetotalamt) AS BIGINT)) AS totalamount
+  FROM adempiere.c_invoiceline
+  WHERE c_invoice_id = $P{RECORD_ID}]]>
+	</queryString>
+	<field name="totalamount" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="totalamount"/>
+		<property name="com.jaspersoft.studio.field.label" value="totalamount"/>
+	</field>
+	<group name="totalamount">
+		<groupExpression><![CDATA[$F{totalamount}]]></groupExpression>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<textField isBlankWhenNull="true">
+				<reportElement x="-17" y="0" width="370" height="20" uuid="110d16b8-4e4e-479f-a36c-dc3e66c54a34"/>
+				<textElement>
+					<font size="11" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalamount}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

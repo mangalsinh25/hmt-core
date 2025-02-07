@@ -338,7 +338,7 @@ public class MTax extends X_C_Tax implements ImmutablePOSupport
 
 		BigDecimal tax = Env.ZERO;		
 		for (MTax taxc : taxarray) {
-			BigDecimal multiplier = taxc.getRate().divide(Env.ONEHUNDRED, 12, RoundingMode.HALF_UP);		
+			BigDecimal multiplier = taxc.getRate().divide(Env.ONEHUNDRED, 12, RoundingMode.HALF_UP);
 			if (!taxIncluded)	//	$100 * 6 / 100 == $6 == $100 * 0.06
 			{
 				BigDecimal itax = amount.multiply(multiplier).setScale(scale, RoundingMode.HALF_UP);
@@ -346,9 +346,13 @@ public class MTax extends X_C_Tax implements ImmutablePOSupport
 			}
 			else			//	$106 - ($106 / (100+6)/100) == $6 == $106 - ($106/1.06)
 			{
-				multiplier = multiplier.add(Env.ONE);
-				BigDecimal base = amount.divide(multiplier, 12, RoundingMode.HALF_UP); 
-				BigDecimal itax = amount.subtract(base).setScale(scale, RoundingMode.HALF_UP);
+				
+				//multiplier = multiplier.add(Env.ONE);
+				BigDecimal itax = amount.divide(multiplier.add(Env.ONE), 12, RoundingMode.HALF_UP).multiply(multiplier); 
+				//BigDecimal itax = amount.subtract(base).setScale(scale, RoundingMode.HALF_UP);
+				if(!isSummary()) {
+					itax = itax.divide(new BigDecimal(2),12,RoundingMode.HALF_UP);
+				}
 				tax = tax.add(itax);
 			}
 		}

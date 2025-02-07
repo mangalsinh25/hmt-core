@@ -30,6 +30,7 @@ import org.adempiere.webui.component.ConfirmPanel;
 import org.adempiere.webui.component.Label;
 import org.adempiere.webui.component.ListModelTable;
 import org.adempiere.webui.component.ListboxFactory;
+import org.adempiere.webui.component.NumberBox;
 import org.adempiere.webui.component.Panel;
 import org.adempiere.webui.component.SimpleTreeModel;
 import org.adempiere.webui.component.WListbox;
@@ -43,6 +44,7 @@ import org.adempiere.webui.util.TreeUtils;
 import org.adempiere.webui.util.ZKUpdateUtil;
 import org.compiere.apps.form.TreeBOM;
 import org.compiere.model.MColumn;
+import org.compiere.model.MCost;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MProduct;
@@ -118,6 +120,10 @@ public class WTreeBOM extends TreeBOM implements IFormController, EventListener<
 	/** Expand or collapse all tree nodes. Child of {@link #southLayout}. */
 	private Checkbox treeExpand = new Checkbox();
 	
+	private Label lblCurrentCost = new Label();
+	private NumberBox numCurrentCost = new NumberBox(false);
+
+	
 	/**
 	 * Default constructor
 	 */
@@ -146,6 +152,7 @@ public class WTreeBOM extends TreeBOM implements IFormController, EventListener<
 		columnNames.add(Msg.getElement(Env.getCtx(), "M_Product_ID"));   // 2
 		columnNames.add(Msg.getElement(Env.getCtx(), "C_UOM_ID"));       // 3
 		columnNames.add(Msg.getElement(Env.getCtx(), "QtyBOM"));   	   	 // 4
+		columnNames.add(Msg.getElement(Env.getCtx(), "Cost"));   	   	 // 4
 		
 		tableBOM.clear();
 
@@ -157,6 +164,7 @@ public class WTreeBOM extends TreeBOM implements IFormController, EventListener<
 		tableBOM.setColumnClass( 1, String.class,true);       //  1 Line
 		tableBOM.setColumnClass( 2, KeyNamePair.class,true);  //  2 M_Product_ID
 		tableBOM.setColumnClass( 3, KeyNamePair.class,true);  //  3 C_UOM_ID
+		tableBOM.setColumnClass( 4, BigDecimal.class,true);   //  4 QtyBOM
 		tableBOM.setColumnClass( 4, BigDecimal.class,true);   //  4 QtyBOM
 		
 	}   //  dynInit
@@ -206,6 +214,9 @@ public class WTreeBOM extends TreeBOM implements IFormController, EventListener<
 		implosion.setText (Msg.getElement(Env.getCtx(), "Implosion"));
 		treeInfo.setText (Msg.getElement(Env.getCtx(), "Sel_Product_ID")+": ");
 		
+		lblCurrentCost.setText("Total Current Cost :");
+		numCurrentCost.setEnabled(false);
+		
 		North north = new North();
 		north.appendChild(northPanel);
 		ZKUpdateUtil.setVflex(north, "min");
@@ -228,6 +239,9 @@ public class WTreeBOM extends TreeBOM implements IFormController, EventListener<
 		northLayout.appendChild(implosion);
 		northLayout.appendChild(new Space());
 		northLayout.appendChild(treeInfo);
+		northLayout.appendChild(lblCurrentCost);
+		northLayout.appendChild(numCurrentCost);
+		
 		if (ClientInfo.maxWidth(ClientInfo.SMALL_WIDTH-1))
 			treeInfo.setVisible(false);
 		
@@ -368,7 +382,8 @@ public class WTreeBOM extends TreeBOM implements IFormController, EventListener<
 		KeyNamePair uom = new KeyNamePair(u.get_ID(),u.getUOMSymbol());
 		line.add(uom); //  3 C_UOM_ID
 		line.add((BigDecimal) (Env.ONE).setScale(4, RoundingMode.HALF_UP).stripTrailingZeros());  //  4 QtyBOM
-
+		BigDecimal currentCost = MCost.getCurrentCost(product, 0, null);
+		numCurrentCost.setValue(currentCost);
 		// dummy root node, as first node is not displayed in tree  
 		mySimpleTreeNode parent = new mySimpleTreeNode("Root",new ArrayList<TreeNode<Object>>());
 		//m_root = parent;
@@ -502,6 +517,8 @@ public class WTreeBOM extends TreeBOM implements IFormController, EventListener<
 		KeyNamePair uom = new KeyNamePair(u.get_ID(),u.getUOMSymbol());
 		line.add(uom); //  3 C_UOM_ID
 		line.add((BigDecimal) ((bomline.getQtyBOM()!=null) ? bomline.getQtyBOM() : Env.ZERO).setScale(4, RoundingMode.HALF_UP).stripTrailingZeros());  //  4 QtyBOM
+		BigDecimal currentCost = MCost.getCurrentCost(M_Product, 0, null);
+		line.add(currentCost);
 
 		mySimpleTreeNode child = new mySimpleTreeNode(line,new ArrayList<TreeNode<Object>>());
 		if (!reload)

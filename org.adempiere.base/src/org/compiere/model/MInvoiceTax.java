@@ -17,6 +17,7 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -344,7 +345,28 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		//	Calculate Tax
 		if (documentLevel || taxAmt.signum() == 0)
 			taxAmt = tax.calculateTax(taxBaseAmt, isTaxIncluded(), getPrecision());
-		setTaxAmt(taxAmt);
+		
+		if(parentTaxId > 0) {
+			BigDecimal multiplier = tax.getRate().divide(Env.ONEHUNDRED, 12, RoundingMode.HALF_UP);
+			if (!isTaxIncluded())	//	$100 * 6 / 100 == $6 == $100 * 0.06
+			{
+				BigDecimal itax = taxBaseAmt.multiply(multiplier).setScale(getPrecision(), RoundingMode.HALF_UP);
+				taxAmt = itax;
+			}
+			else			//	$106 - ($106 / (100+6)/100) == $6 == $106 - ($106/1.06)
+			{
+				//multiplier = multiplier.add(Env.ONE);
+				BigDecimal itax = taxBaseAmt.divide(multiplier.add(Env.ONE), 12, RoundingMode.HALF_UP).multiply(multiplier); 
+				//BigDecimal itax = amount.subtract(base).setScale(scale, RoundingMode.HALF_UP);
+				if(!tax.isSummary()) {
+					itax = itax.divide(new BigDecimal(2),12,RoundingMode.HALF_UP);
+				}
+				taxAmt = itax;
+			} 
+			setTaxAmt(taxAmt);
+		} else {
+			setTaxAmt(taxAmt);
+		}
 
 		//	Set Base
 		if (isTaxIncluded())

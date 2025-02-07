@@ -390,6 +390,12 @@
         <setEntry value="zweb@default:default"/>
     </setAttribute>
     <setAttribute key="selected_workspace_bundles">
+        <setEntry value="com.chuboe.trialbalance2@4:true"/>
+        <setEntry value="com.hmtechnolab.base@4:true"/>
+        <setEntry value="com.hmtechnolab.einvoice@4:true"/>
+        <setEntry value="com.hmtechnolab.pos@4:true"/>
+        <setEntry value="com.hmtechnolab.withholdings@4:true"/>
+        <setEntry value="kanbanBoard@4:true"/>
         <setEntry value="org.adempiere.base.callout@default:default"/>
         <setEntry value="org.adempiere.base.process@default:default"/>
         <setEntry value="org.adempiere.base@default:default"/>

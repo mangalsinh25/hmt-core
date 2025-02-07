@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.20.6.final using JasperReports Library version 6.20.6-5c96b6aa8a39ac1dc6b6bea4b81168e16dd39231  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="SalesInvoiceLine_Details" pageWidth="595" pageHeight="842" columnWidth="585" leftMargin="10" rightMargin="0" topMargin="0" bottomMargin="0" uuid="ee710912-4310-4633-915a-259063c88438">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Bakery B Idempiere Database"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="RECORD_ID" class="java.lang.Integer"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT invl.linetotalamt as TaxableAmount, prd.customstariffnumber as HSNCode,
+SUM((invl.linenetamt * tax.rate) / 100) AS taxamt,tax.rate as Taxrate,
+(
+        SELECT SUM(taxamt)
+        FROM (
+            SELECT (invl.linenetamt * tax.rate) / 100 AS taxamt
+            FROM adempiere.c_invoiceline invl
+            INNER JOIN adempiere.m_product prd ON invl.m_product_id = prd.m_product_id
+            INNER JOIN adempiere.c_tax tax ON invl.c_tax_id = tax.c_tax_id
+            WHERE invl.c_invoice_id = $P{RECORD_ID}
+        ) AS subquery
+    ) AS SumOfTax,
+    (
+        SELECT SUM(netamttotal.linenetamt)
+        FROM adempiere.c_invoiceline netamttotal
+        WHERE netamttotal.c_invoice_id = $P{RECORD_ID}
+    ) AS Sumofnettotal
+	FROM adempiere.c_invoiceline invl
+INNER JOIN adempiere.m_product prd ON invl.m_product_id  = prd.m_product_id 
+INNER JOIN adempiere.c_tax tax ON invl.c_tax_id = tax.c_tax_id
+WHERE invl.c_invoice_id = $P{RECORD_ID}
+GROUP by invl.linetotalamt, prd.customstariffnumber, tax.rate
+
+]]>
+	</queryString>
+	<field name="taxableamount" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="taxableamount"/>
+		<property name="com.jaspersoft.studio.field.label" value="taxableamount"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_invoiceline"/>
+	</field>
+	<field name="hsncode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="hsncode"/>
+		<property name="com.jaspersoft.studio.field.label" value="hsncode"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="m_product"/>
+	</field>
+	<field name="taxamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="taxamt"/>
+		<property name="com.jaspersoft.studio.field.label" value="taxamt"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_invoicetax"/>
+	</field>
+	<field name="taxrate" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="taxrate"/>
+		<property name="com.jaspersoft.studio.field.label" value="taxrate"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_tax"/>
+	</field>
+	<field name="sumoftax" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="sumoftax"/>
+		<property name="com.jaspersoft.studio.field.label" value="sumoftax"/>
+	</field>
+	<field name="sumofnettotal" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="sumofnettotal"/>
+		<property name="com.jaspersoft.studio.field.label" value="sumofnettotal"/>
+	</field>
+	<group name="taxableamount">
+		<groupExpression><![CDATA[$F{taxableamount}]]></groupExpression>
+	</group>
+	<group name="hsncode">
+		<groupExpression><![CDATA[$F{hsncode}]]></groupExpression>
+	</group>
+	<group name="taxamt">
+		<groupExpression><![CDATA[$F{taxamt}]]></groupExpression>
+	</group>
+	<group name="taxrate">
+		<groupExpression><![CDATA[$F{taxrate}]]></groupExpression>
+	</group>
+	<columnHeader>
+		<band height="39" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="49" height="38" backcolor="#CCCCCC" uuid="7373564b-fdb2-4e92-b00a-91c3d9e77f49"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Calibri" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[HSN Code]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="296" y="0" width="50" height="38" backcolor="#CCCCCC" uuid="5d4127a6-3ef8-4317-a1b4-92091127aee8">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Calibri" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[IGST]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="245" y="0" width="50" height="38" backcolor="#CCCCCC" uuid="70049957-f465-4ad3-bc2a-34ffdd229421">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Calibri" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[CESS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="49" y="0" width="50" height="38" backcolor="#CCCCCC" uuid="61fe0a94-b637-46a6-ada6-ee0a88ffaba4"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Calibri" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tax Rate]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="197" y="0" width="48" height="38" backcolor="#CCCCCC" uuid="1c8d65a4-17d0-42cc-b229-ec038fdb9b3d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Calibri" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[CGST]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="100" y="0" width="51" height="38" backcolor="#CCCCCC" uuid="6371830c-e211-4223-82b5-995d41dd1869"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Calibri" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Taxable Amount]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="152" y="0" width="44" height="38" backcolor="#CCCCCC" uuid="177e56f5-85d8-4b1d-b036-0bc9c7c83d3a">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Calibri" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SGST]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="0" y="0" width="346" height="38" forecolor="#ABADB3" uuid="1415e059-c2cc-4b34-9f74-bebd8288d633">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid" lineColor="#0C0C0D"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Calibri" size="10" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<line>
+				<reportElement positionType="Float" x="49" y="0" width="1" height="39" uuid="5fcab98a-a349-4ad6-8a38-8c368e80c81f"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="99" y="0" width="1" height="38" uuid="09b191cb-b261-405c-97b7-573d3060e3dd"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="151" y="1" width="1" height="37" uuid="c18abf85-4e48-4ca1-8f8e-b89cb5877dc9"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="196" y="0" width="1" height="37" uuid="4cd94f2b-9bf2-40b9-85d0-73a1de30152b"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="245" y="0" width="1" height="37" uuid="34f36173-bb68-4fa3-aa59-e2dfc7d41eba"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="295" y="0" width="1" height="37" uuid="602bf6ca-b874-4167-ac70-30cce67cffed"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="17" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<staticText>
+				<reportElement x="252" y="1" width="39" height="15" uuid="0aa2e84b-9003-4a45-9ffa-8c6660b309ef"/>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<text><![CDATA[#Error]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="162" y="1" width="30" height="15" uuid="900cbd8e-37c5-4d29-baca-86893cb8ddea">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="088130b0-b26b-4b50-8a23-d52c9615e7c4"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxamt}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="2" y="1" width="44" height="15" uuid="8df4f4d0-968a-4f95-89f3-2d9f0b94a374">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="59280038-f4e0-41b2-a590-47d75f1a467f"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{hsncode}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="108" y="1" width="40" height="15" uuid="84e5c35e-45b1-48a5-81c8-d4dc17b404a0">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="5a187308-a2b2-491e-ad05-eb944b431446"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxableamount}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="306" y="1" width="37" height="15" uuid="fdaaf349-28d1-449f-aaf0-6ea0bbb9a6cb"/>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<text><![CDATA[0.00]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="57" y="1" width="40" height="15" uuid="676ae81c-fff1-4272-abae-44658c167f3e">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="bdff7f43-5e26-4479-9cf9-6f3c2f7608c3"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxrate}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="210" y="1" width="30" height="15" uuid="4d25f784-a43b-4a4a-8aad-16c42c8a7b08">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="088130b0-b26b-4b50-8a23-d52c9615e7c4"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxamt}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="0" y="-1" width="346" height="18" forecolor="#0C0C0D" uuid="e3297658-709d-47f8-b9bc-fbd831f6e9c3">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid" lineColor="#0C0C0D"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Calibri" size="10" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<line>
+				<reportElement positionType="Float" x="99" y="0" width="1" height="17" uuid="9620f028-931e-4008-be1a-a176f2430577"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="151" y="0" width="1" height="16" uuid="43658fc3-a4d8-47a4-859d-1e94aaba074b"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="196" y="0" width="1" height="17" uuid="d4ccc997-814f-4180-997c-0be90a129af0"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="245" y="0" width="1" height="17" uuid="90a9c8d0-7077-4dde-99f9-2d47d19dac97"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="295" y="0" width="1" height="17" uuid="1bc8471f-83ec-4da6-9014-1c3e937f8c3a"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="49" y="-1" width="1" height="17" uuid="899c4fb0-57fe-448e-8c67-686b59a92d88"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="22">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="1" width="346" height="20" backcolor="#CCCCCC" uuid="9a60c269-8ed2-467e-bb41-5c471db1e0e7">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Calibri" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="200" y="3" width="40" height="17" uuid="f100a6e6-ecc1-454d-8863-60a97b18aea9"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{sumoftax}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="153" y="2" width="40" height="17" uuid="90486a4f-8f4f-4484-bc3c-f6947c2744a6"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{sumoftax}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="110" y="3" width="34" height="16" uuid="3db2ce3d-54a2-4fec-9091-069ec396dfa5"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{sumofnettotal}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="252" y="1" width="39" height="15" uuid="1c6a47d9-dab3-4136-ba40-8063120dede2"/>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<text><![CDATA[#Error]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="306" y="1" width="37" height="15" uuid="65bd5943-726f-4473-acaa-ccecfe8fbc9e"/>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<text><![CDATA[0.00]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="0" y="0" width="346" height="22" forecolor="#0C0C0D" uuid="23e16d3b-edbf-49fd-9c8d-a6e36eb9cbaa">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid" lineColor="#0C0C0D"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Calibri" size="10" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<line>
+				<reportElement positionType="Float" x="295" y="0" width="1" height="21" uuid="c6b91f00-cde4-4662-a3e3-bb8dff9c7da0"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="245" y="1" width="1" height="20" uuid="bfd8921d-5a36-4bd1-8a5f-f5f6676f2962"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="196" y="0" width="1" height="22" uuid="d9ffe2a2-84f4-4d9d-bdfb-8bc3da0b6468"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="151" y="1" width="1" height="20" uuid="c8d597c8-6e1b-4a34-91ac-b3f9f2a37e4a"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="99" y="1" width="1" height="20" uuid="a409db25-7bb7-4bd4-bce7-68bfa98701cc"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+		</band>
+	</columnFooter>
+</jasperReport>

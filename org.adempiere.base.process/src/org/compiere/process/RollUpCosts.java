@@ -30,6 +30,7 @@ import java.sql.ResultSet;
 import java.sql.Savepoint;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import javax.sql.RowSet;
@@ -48,6 +49,7 @@ import org.compiere.util.Msg;
 import org.compiere.util.Trx;
 import org.compiere.util.Util;
 import org.compiere.wf.MWorkflow;
+import org.eevolution.model.MPPProductBOM;
 
 /**
  * 
@@ -275,23 +277,45 @@ public class RollUpCosts extends SvrProcess {
 			rs = pstmt.executeQuery();
 			while (rs.next()) {
 				MCost cost = new MCost(getCtx(), rs, get_TrxName());
+				List<MPPProductBOM> productBOMs = MPPProductBOM.getProductBOMs(product);
+				MPPProductBOM productBOM = productBOMs.get(0);
+				StringBuilder newCurrentCostPriceSql = new StringBuilder();
+				if(productBOM.get_ValueAsBoolean("IsProductOnBatch")) {
+					newCurrentCostPriceSql = new StringBuilder("SELECT SUM(b.QtyBOM/bom.batch_size * c.CurrentCostPrice)")
+							.append(" FROM PP_Product_BOMLine b ")
+							.append(" INNER JOIN M_Cost c ON (b.M_PRODUCT_ID = c.M_Product_ID) ") 
+							.append(" JOIN PP_Product_BOM bom ON (bom.PP_PRODUCT_BOM_ID = b.PP_PRODUCT_BOM_ID AND bom.IsActive='Y') ")
+							.append(" WHERE bom.M_Product_ID = ").append(productId).append(" AND bom.BOMType='A' AND bom.BOMUse='A' AND M_CostElement_ID = ").append(costelement_id)
+							.append(" AND c.C_AcctSchema_ID = ").append(cost.getC_AcctSchema_ID());
+				} else {
+					newCurrentCostPriceSql = new StringBuilder("SELECT SUM(b.QtyBOM * c.CurrentCostPrice)")
+							.append(" FROM PP_Product_BOMLine b ")
+							.append(" INNER JOIN M_Cost c ON (b.M_PRODUCT_ID = c.M_Product_ID) ") 
+							.append(" JOIN PP_Product_BOM bom ON (bom.PP_PRODUCT_BOM_ID = b.PP_PRODUCT_BOM_ID AND bom.IsActive='Y') ")
+							.append(" WHERE bom.M_Product_ID = ").append(productId).append(" AND bom.BOMType='A' AND bom.BOMUse='A' AND M_CostElement_ID = ").append(costelement_id)
+							.append(" AND c.C_AcctSchema_ID = ").append(cost.getC_AcctSchema_ID());
+				}
 				
-				StringBuilder newCurrentCostPriceSql = new StringBuilder("SELECT SUM(b.QtyBOM * c.CurrentCostPrice)")
-						.append(" FROM PP_Product_BOMLine b ")
-						.append(" INNER JOIN M_Cost c ON (b.M_PRODUCT_ID = c.M_Product_ID) ") 
-						.append(" JOIN PP_Product_BOM bom ON (bom.PP_PRODUCT_BOM_ID = b.PP_PRODUCT_BOM_ID AND bom.IsActive='Y') ")
-						.append(" WHERE bom.M_Product_ID = ").append(productId).append(" AND bom.BOMType='A' AND bom.BOMUse='A' AND M_CostElement_ID = ").append(costelement_id)
-						.append(" AND c.C_AcctSchema_ID = ").append(cost.getC_AcctSchema_ID());
 				BigDecimal newCurrentCostPrice = DB.getSQLValueBD(get_TrxName(), newCurrentCostPriceSql.toString());
 				if (newCurrentCostPrice == null)
 					newCurrentCostPrice = BigDecimal.ZERO;
+				StringBuilder newFutureCostPriceSql = new StringBuilder();
+				if(productBOM.get_ValueAsBoolean("IsProductOnBatch")) {
+					newFutureCostPriceSql = new StringBuilder("SELECT SUM(b.QtyBOM/bom.batch_size * c.FutureCostPrice)")
+							.append(" FROM PP_Product_BOMLine b ") 
+							.append(" INNER JOIN M_Cost c ON (b.M_PRODUCT_ID = c.M_Product_ID) ") 
+							.append(" JOIN PP_Product_BOM bom ON (bom.PP_PRODUCT_BOM_ID = b.PP_PRODUCT_BOM_ID AND bom.IsActive='Y') ")
+							.append(" WHERE bom.M_Product_ID = ").append(productId).append(" AND M_CostElement_ID = ").append(costelement_id)
+							.append(" AND c.C_AcctSchema_ID = ").append(cost.getC_AcctSchema_ID());
+				} else {
+					newFutureCostPriceSql = new StringBuilder("SELECT SUM(b.QtyBOM * c.FutureCostPrice)")
+							.append(" FROM PP_Product_BOMLine b ") 
+							.append(" INNER JOIN M_Cost c ON (b.M_PRODUCT_ID = c.M_Product_ID) ") 
+							.append(" JOIN PP_Product_BOM bom ON (bom.PP_PRODUCT_BOM_ID = b.PP_PRODUCT_BOM_ID AND bom.IsActive='Y') ")
+							.append(" WHERE bom.M_Product_ID = ").append(productId).append(" AND M_CostElement_ID = ").append(costelement_id)
+							.append(" AND c.C_AcctSchema_ID = ").append(cost.getC_AcctSchema_ID());
+				}
 				
-				StringBuilder newFutureCostPriceSql = new StringBuilder("SELECT SUM(b.QtyBOM * c.FutureCostPrice)")
-						.append(" FROM PP_Product_BOMLine b ") 
-						.append(" INNER JOIN M_Cost c ON (b.M_PRODUCT_ID = c.M_Product_ID) ") 
-						.append(" JOIN PP_Product_BOM bom ON (bom.PP_PRODUCT_BOM_ID = b.PP_PRODUCT_BOM_ID AND bom.IsActive='Y') ")
-						.append(" WHERE bom.M_Product_ID = ").append(productId).append(" AND M_CostElement_ID = ").append(costelement_id)
-						.append(" AND c.C_AcctSchema_ID = ").append(cost.getC_AcctSchema_ID());
 				BigDecimal newFutureCostPrice = DB.getSQLValueBD(get_TrxName(), newFutureCostPriceSql.toString());
 				if (newFutureCostPrice == null)
 					newFutureCostPrice = BigDecimal.ZERO;

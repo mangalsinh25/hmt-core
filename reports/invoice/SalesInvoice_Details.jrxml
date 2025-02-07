@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.20.6.final using JasperReports Library version 6.20.6-5c96b6aa8a39ac1dc6b6bea4b81168e16dd39231  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="SalesInvoice_Details" pageWidth="595" pageHeight="842" columnWidth="578" leftMargin="17" rightMargin="0" topMargin="0" bottomMargin="5" uuid="fd93d601-ac20-4032-8575-ca15329746a8">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Bakery B Idempiere Database"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="RECORD_ID" class="java.lang.Integer"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT
+    ROW_NUMBER() OVER (ORDER BY invl.qtyinvoiced, invl.pricelist) AS row_num,
+    invl.qtyinvoiced,
+    invl.pricelist,
+    invl.priceactual,
+    invl.linetotalamt,
+    prd."name",
+    prd.customstariffnumber,
+    tax.rate,
+    invl.linenetamt AS total,
+    SUM((invl.linenetamt * tax.rate) / 100) AS taxamt,
+    (
+        SELECT SUM(taxamt)
+        FROM (
+            SELECT (invl.linenetamt * tax.rate) / 100 AS taxamt
+            FROM adempiere.c_invoiceline invl
+            INNER JOIN adempiere.m_product prd ON invl.m_product_id = prd.m_product_id
+            INNER JOIN adempiere.c_tax tax ON invl.c_tax_id = tax.c_tax_id
+            WHERE invl.c_invoice_id = $P{RECORD_ID}
+        ) AS subquery
+    ) AS SumOfTax,
+    (
+        SELECT SUM(totalamttotal.linetotalamt)
+        FROM adempiere.c_invoiceline totalamttotal
+        WHERE totalamttotal.c_invoice_id = $P{RECORD_ID}
+    ) AS Sumoftotal,
+    (
+        SELECT SUM(netamttotal.linenetamt)
+        FROM adempiere.c_invoiceline netamttotal
+        WHERE netamttotal.c_invoice_id = $P{RECORD_ID}
+    ) AS Sumofnettotal
+FROM
+    adempiere.c_invoiceline invl
+INNER JOIN adempiere.m_product prd ON invl.m_product_id = prd.m_product_id
+INNER JOIN adempiere.c_tax tax ON invl.c_tax_id = tax.c_tax_id
+WHERE
+    invl.c_invoice_id = $P{RECORD_ID}
+GROUP BY
+    invl.qtyinvoiced,
+    invl.pricelist,
+    invl.priceactual,
+    invl.linetotalamt,
+    prd."name",
+    prd.customstariffnumber,
+    tax.rate,
+    invl.linenetamt
+]]>
+	</queryString>
+	<field name="row_num" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="row_num"/>
+		<property name="com.jaspersoft.studio.field.label" value="row_num"/>
+	</field>
+	<field name="qtyinvoiced" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtyinvoiced"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtyinvoiced"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_invoiceline"/>
+	</field>
+	<field name="pricelist" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="pricelist"/>
+		<property name="com.jaspersoft.studio.field.label" value="pricelist"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_invoiceline"/>
+	</field>
+	<field name="priceactual" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="priceactual"/>
+		<property name="com.jaspersoft.studio.field.label" value="priceactual"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_invoiceline"/>
+	</field>
+	<field name="linetotalamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="linetotalamt"/>
+		<property name="com.jaspersoft.studio.field.label" value="linetotalamt"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_invoiceline"/>
+	</field>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="name"/>
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="m_product"/>
+	</field>
+	<field name="customstariffnumber" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="customstariffnumber"/>
+		<property name="com.jaspersoft.studio.field.label" value="customstariffnumber"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="m_product"/>
+	</field>
+	<field name="rate" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="rate"/>
+		<property name="com.jaspersoft.studio.field.label" value="rate"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_tax"/>
+	</field>
+	<field name="total" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="total"/>
+		<property name="com.jaspersoft.studio.field.label" value="total"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_invoiceline"/>
+	</field>
+	<field name="taxamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="taxamt"/>
+		<property name="com.jaspersoft.studio.field.label" value="taxamt"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_invoicetax"/>
+	</field>
+	<field name="sumoftax" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="sumoftax"/>
+		<property name="com.jaspersoft.studio.field.label" value="sumoftax"/>
+	</field>
+	<field name="sumoftotal" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="sumoftotal"/>
+		<property name="com.jaspersoft.studio.field.label" value="sumoftotal"/>
+	</field>
+	<field name="sumofnettotal" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="sumofnettotal"/>
+		<property name="com.jaspersoft.studio.field.label" value="sumofnettotal"/>
+	</field>
+	<variable name="sumoftotal" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$F{sumoftotal}]]></variableExpression>
+	</variable>
+	<variable name="sumoftax" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$F{sumoftax}]]></variableExpression>
+	</variable>
+	<variable name="sumofnettotal" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$F{sumofnettotal}]]></variableExpression>
+	</variable>
+	<group name="qtyinvoiced">
+		<groupExpression><![CDATA[$F{qtyinvoiced}]]></groupExpression>
+	</group>
+	<group name="pricelist">
+		<groupExpression><![CDATA[$F{pricelist}]]></groupExpression>
+	</group>
+	<group name="priceactual">
+		<groupExpression><![CDATA[$F{priceactual}]]></groupExpression>
+	</group>
+	<group name="linetotalamt">
+		<groupExpression><![CDATA[$F{linetotalamt}]]></groupExpression>
+	</group>
+	<group name="name">
+		<groupExpression><![CDATA[$F{name}]]></groupExpression>
+	</group>
+	<group name="customstariffnumber">
+		<groupExpression><![CDATA[$F{customstariffnumber}]]></groupExpression>
+	</group>
+	<group name="taxamt">
+		<groupExpression><![CDATA[$F{taxamt}]]></groupExpression>
+	</group>
+	<group name="rate">
+		<groupExpression><![CDATA[$F{rate}]]></groupExpression>
+	</group>
+	<group name="total">
+		<groupExpression><![CDATA[$F{total}]]></groupExpression>
+	</group>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<textField isBlankWhenNull="true">
+				<reportElement x="450" y="1" width="28" height="16" uuid="b6002929-df30-4ce5-8671-8004e48904d7">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{taxamt}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="487" y="1" width="28" height="16" uuid="12ab9477-ac63-40d9-a5ad-cc81d8be2a4f">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{taxamt}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="19" y="1" width="111" height="16" uuid="7ab96b7b-54e1-497b-911d-4cbdae0d97cc">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="327" y="1" width="22" height="16" uuid="67053026-1681-42df-95b9-0600c0f4f8cf">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[-]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="139" y="1" width="38" height="16" uuid="e07d9390-ad10-4051-a18e-cfe43212e10f">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{customstariffnumber}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="524" y="1" width="44" height="16" uuid="31fd3539-52f9-4db3-97f7-5baf07e80675">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{linetotalamt}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="193" y="1" width="28" height="16" uuid="99cbad9f-d47b-466f-9182-4c55869cbc9d">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{qtyinvoiced}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="231" y="1" width="36" height="16" uuid="67895711-4beb-42f7-9780-29d6ec02e3ff">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{pricelist}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="354" y="1" width="37" height="16" uuid="15ae8e59-3c93-47a1-86aa-9aa314ad72a8">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{rate}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="281" y="1" width="36" height="16" uuid="30046fc6-9d99-46f7-af1d-86b39678c3d4">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{priceactual}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="400" y="1" width="40" height="17" uuid="5cbe3706-b5c3-40ad-b99a-1f91509df2b7"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{total}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="-6" y="1" width="20" height="16" uuid="b7e8c2bd-8d49-48e2-b337-19e110ed2b01"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{row_num}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement positionType="Float" x="13" y="0" width="1" height="19" uuid="fdf78e67-4e08-4bcf-8c32-34f4901b31cf"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="133" y="0" width="1" height="19" uuid="a8410797-6c70-4934-8ffc-8dff70fb7976"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="183" y="1" width="1" height="19" uuid="11f50689-0a0b-4b72-b78b-58ec3d5e3736"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="225" y="1" width="1" height="19" uuid="b7ef8958-2eaf-4c13-a8b4-76a1b6a86ec0"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="271" y="0" width="1" height="19" uuid="ef205fc1-88d5-464d-8884-6080204003cf"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="320" y="1" width="1" height="19" uuid="7e25dc77-e59f-443c-a23a-9fb5e826d3f1"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="353" y="0" width="1" height="19" uuid="600f9936-4831-4a28-8b2f-30ea5c8b4564"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="396" y="1" width="1" height="19" uuid="4623c793-eedc-47f6-9c0b-6a7cc6f245ed"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="444" y="0" width="1" height="19" uuid="6a94d303-0ac7-466e-8fc2-a17abadb7114"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="483" y="1" width="1" height="19" uuid="bc836032-b241-4550-ac44-9c12de7326fd"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement positionType="Float" x="519" y="1" width="1" height="19" uuid="1aaa2e43-2149-44ba-aed0-075851a2071f"/>
+				<graphicElement>
+					<pen lineColor="#ABADB3"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement mode="Transparent" x="-10" y="0" width="580" height="20" forecolor="#ABADB3" uuid="184c6f07-c3c5-4e45-b757-62190bc29db9">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid" lineColor="#ABADB3"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Calibri" size="10" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+		</band>
+	</detail>
+</jasperReport>
